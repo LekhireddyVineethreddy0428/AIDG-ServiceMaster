@@ -1,0 +1,29 @@
+<core:FragmentDefinition xmlns:core="sap.ui.core"
+    xmlns:footerbar="sap.ushell.ui.footerbar"
+    xmlns:l="sap.ui.layout"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:semantic="sap.m.semantic"
+    xmlns="sap.m"
+    xmlns:commons="sap.suite.ui.commons"
+    xmlns:sform="sap.ui.comp.smartform"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:smartField="sap.ui.comp.smartfield">
+    <Dialog id="idrejct" title="Reject">
+        <content>
+            <form:SimpleForm editable="true" adjustLabelSpan="true">
+                <Label text="Back To" labelFor="idrejectip" />
+                <ComboBox id="idrejectip" name="Send to Step" items="{oRejModel>/}" showSecondaryValues="true" selectedKey="1-1" required="true">
+                    <core:ListItem key="{oRejModel>step}" text="{oRejModel>step_name}" additionalText="{oRejModel>step}" />
+                </ComboBox>
+                <Label text="Comment"/>
+                <TextArea id="idRejectComment" required="true" liveChange="onChangeInputArea"></TextArea>
+            </form:SimpleForm>
+        </content>
+        <beginButton>
+            <Button text="OK" press="onConfirmReject" type="Emphasized"/>
+        </beginButton>
+        <endButton>
+            <Button text="Cancel" press="onCancel" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

@@ -1,0 +1,33 @@
+{
+  "generationParameters": {
+    "generationDate": "Mon Dec 22 2025 06:00:58 GMT+0000 (Coordinated Universal Time)",
+    "generatorPlatform": "SAP Business Application Studio",
+    "serviceType": "SAP System (ABAP On-Premise)",
+    "metadataFilename": "",
+    "serviceUrl": "http://airdithanaprd:44388/sap/opu/odata/sap/ZP_QU_DG_SMROOT_SB",
+    "appName": "aidgservicemaster",
+    "appTitle": "AIDG-ServiceMaster",
+    "appDescription": "An SAP Fiori application.",
+    "appNamespace": "",
+    "ui5Theme": "sap_fiori_3",
+    "ui5Version": "1.96.37",
+    "enableCodeAssist": false,
+    "enableEslint": false,
+    "enableTypeScript": false,
+    "showMockDataInfo": true,
+    "generatorVersion": "1.19.5",
+    "template": "List Report Page V2",
+    "generatorName": "SAP Fiori Application Generator",
+    "entityRelatedConfig": [
+      {
+        "type": "Main Entity",
+        "value": "ZP_QU_DG_SMROOT"
+      },
+      {
+        "type": "Navigation Entity",
+        "value": "DraftAdministrativeData"
+      }
+    ],
+    "launchText": "To launch the generated application, run the following from the generated application root folder:\n\n```\n    npm start\n```"
+  }
+}

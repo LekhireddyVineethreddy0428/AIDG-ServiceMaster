@@ -1,0 +1,11 @@
+<core:FragmentDefinition xmlns:core="sap.ui.core"
+	xmlns="sap.m"
+	xmlns:form="sap.ui.layout.form"
+	xmlns:sform="sap.ui.comp.smartform"
+	xmlns:l="sap.ui.layout"
+	xmlns:u="sap.ui.unified"
+	xmlns:mvc="sap.ui.core.mvc">
+	<u:FileUploader id="fileUploader" name="myFileUpload" tooltip="Upload your file to the local server" uploadComplete="handleUploadComplete" change="handleValueChange" typeMissmatch="handleTypeMissmatch" useMultipart="false" sendXHR="true" buttonOnly="true" buttonText=" " icon="sap-icon://edit" fileType="png,jpg" maximumFileSize="1" class="fileUploaderClass" visible="false">
+	</u:FileUploader >
+	<Button icon="sap-icon://delete" id="deleteButton" class="classBtn" press='OnImageDelete' visible="false"></Button>
+</core:FragmentDefinition>

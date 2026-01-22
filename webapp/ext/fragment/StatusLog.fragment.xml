@@ -1,0 +1,38 @@
+<core:FragmentDefinition xmlns:core="sap.ui.core"
+    xmlns="sap.m"
+    xmlns:ng="sap.suite.ui.commons.networkgraph"
+    xmlns:ngl="sap.suite.ui.commons.networkgraph.layout">
+    <Dialog id="idStatusLogs" title="Status">
+        <content>
+            <ng:Graph enableWheelZoom="false" orientation="TopBottom" nodes="{StatusLogModel>/nodes}" lines="{StatusLogModel>/lines}" id="networkGraph" height="auto" afterLayouting="onAfterLayouting">
+                <ng:layoutAlgorithm>
+                    <ngl:LayeredLayout id="_IDGenLayeredLayout1" mergeEdges="true" nodePlacement="Simple" nodeSpacing="40"/>
+                </ng:layoutAlgorithm>
+                <ng:nodes>
+                    <ng:Node id="_IDGenNode1" icon="{StatusLogModel>Icon}" key="{StatusLogModel>Sequence}" description="{StatusLogModel>WiText}" title="{StatusLogModel>WiStat}" width="90" descriptionLineSize="0" shape="Box" press="handleNodeClick" status="{path: 'StatusLogModel>WiStat', formatter:'.customFormatter.logStatusFormatter'}" showExpandButton="false">
+                        <ng:attributes>
+                            <ng:ElementAttribute label="Step Name" value="{StatusLogModel>Step_name}"/>
+                            <ng:ElementAttribute label="Author" value="{StatusLogModel>WiAagent}"/>
+                            <ng:ElementAttribute label="Date" value="{path:'StatusLogModel>WiAed', type: 'sap.ui.model.odata.type.Date' , formatOptions: { pattern: 'dd-MMM-yyyy' }}"/>
+                            <!-- <ng:ElementAttribute label="Time" value="{path:'StatusLogModel>WiCt', type: 'sap.ui.model.odata.type.Time' , formatOptions: { pattern: 'hh:mm:ss a' }}"/> -->
+                            <ng:ElementAttribute label="Sequence" value="{StatusLogModel>Sequence}"/>
+                        </ng:attributes>
+                        <ng:customData>
+                            <core:CustomData key="class-status" value="{StatusLogModel>WiStat}" writeToDom="true"></core:CustomData>
+                        </ng:customData>
+                        <ng:actionButtons>
+                            <ng:ActionButton icon="sap-icon://role" title="Roles and Users" press="onManageRoles" position="Right" enabled="{= ${StatusLogModel>WiStat} === 'READY' }"/>
+                        </ng:actionButtons>
+                    </ng:Node>
+                </ng:nodes>
+                <ng:lines>
+                    <ng:Line id="_IDGenLine1" from="{StatusLogModel>from}" to="{StatusLogModel>to}" lineType="{StatusLogModel>lineType}"/>
+                </ng:lines>
+            </ng:Graph>
+        </content>
+        <endButton>
+            <Button id="_IDGenButton1" text="Close" press="onCloseStatusLog"/>
+        </endButton>
+    </Dialog>
+
+</core:FragmentDefinition>

@@ -1,0 +1,24 @@
+<core:FragmentDefinition xmlns:core="sap.ui.core"
+    xmlns:footerbar="sap.ushell.ui.footerbar"
+    xmlns:l="sap.ui.layout"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:semantic="sap.m.semantic"
+    xmlns="sap.m"
+    xmlns:commons="sap.suite.ui.commons">
+    <Dialog title="Logs" id="idLogs">
+        <content>
+            <l:VerticalLayout id="_IDGenVerticalLayout11" width="100%">
+                <commons:Timeline id="logList" enableDoubleSided="true" groupBy="CreationTimestamp" growingThreshold="0" sortOldestFirst="true" content="{logModel>/LogCollection}" enableScroll="false">
+                    <commons:content>
+                        <commons:TimelineItem id="idTemplateItem" dateTime="{parts:[{path: 'logModel>WiCd'},{path: 'logModel>WiCt'}], formatter:'.customFormatter.dateTimeFormat'}" title="{logModel>WiStat}" text="{logModel>WiText}" userName="{logModel>WiAagent}" icon="{logModel>Icon}">
+                        </commons:TimelineItem>
+                    </commons:content>
+                </commons:Timeline>
+            </l:VerticalLayout>
+        </content>
+        <endButton>
+            <Button id="_IDGenButton1" text="Close" press="onCloseLog"/>
+        </endButton>
+    </Dialog>
+
+</core:FragmentDefinition>

@@ -1,0 +1,13 @@
+<core:FragmentDefinition xmlns:core="sap.ui.core"
+	xmlns="sap.m"
+	xmlns:l="sap.ui.layout">
+	<l:VerticalLayout id="id:CommentBox" width="100%" core:require="{handler: 'aidgservicemaster/ext/controller/Comments'}">
+		<FeedInput id="_IDGenFeedInput1" post="handler.onPost" icon="" class="sapUiSmallMarginTopBottom" />
+		<List id="_IDGenList1" showSeparators="Inner" items="{localCommentModel>/EntryCollection}">
+			<FeedListItem id="_IDGenFeedListItem1" sender="{localCommentModel>CreatedBy}" icon="" senderPress="handler.onSenderPress" iconPress="handler.onIconPress" info="" timestamp="{path:'localCommentModel>CreatedAt', formatter:'.customFormatter.dateFormatterForComments'}" text="{localCommentModel>Text}" convertLinksToAnchorTags="All"
+			showIcon = "true" actions="{path: 'localCommentModel>Actions', templateShareable: false}">
+				<FeedListItemAction  text="{localCommentModel>Text}" icon="{localCommentModel>Icon}" key="{localCommentModel>Key}" press="handler.onActionPressed" />
+			</FeedListItem>
+		</List>
+	</l:VerticalLayout>
+</core:FragmentDefinition>

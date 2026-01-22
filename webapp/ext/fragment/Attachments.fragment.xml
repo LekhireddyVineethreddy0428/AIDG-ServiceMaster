@@ -1,0 +1,15 @@
+<core:FragmentDefinition xmlns:core="sap.ui.core"
+	xmlns="sap.m"
+	xmlns:l="sap.ui.layout" xmlns:upload="sap.m.upload">
+	<l:VerticalLayout id="" width="100%" core:require="{handler: 'aidgservicemaster/ext/controller/Attachments'}">
+		<upload:UploadSet id="idUploadSet" items="{attachmentDetail>/}" instantUpload="true" maxFileSize="200" noDataDescription="" noDataText="" mode="SingleSelectMaster" beforeUploadStarts="handler.onBeforeUploadStarts" selectionChanged="" class="customUploadSet" uploadCompleted="handler.onUploadCompleted" uploadUrl="/sap/opu/odata/sap/CV_ATTACHMENT_SRV/OriginalContentSet" fileTypes="png,pdf,jpg,xls,xlsx,docx">
+			<upload:items>
+				<upload:UploadSetItem url="/sap/opu/odata/sap/CV_ATTACHMENT_SRV/OriginalContentSet(Documenttype='{attachmentDetail>Documenttype}',Documentnumber='{attachmentDetail>Documentnumber}',Documentpart='{attachmentDetail>Documentpart}',Documentversion='{attachmentDetail>Documentversion}',ApplicationId='{attachmentDetail>ApplicationId}',FileId='{attachmentDetail>FileId}')/$value" openPressed="" visibleRemove="true" visibleEdit="false" selected="false" fileName="{attachmentDetail>Filename}" mediaType="{attachmentDetail>Mimetype}" removePressed="handler.onDeleteAttachment">
+					<upload:attributes>
+						<ObjectAttribute title="Uploaded by : {attachmentDetail>CreatedBy}" text="{path:'attachmentDetail>Cretedon',type: 'sap.ui.model.type.Date', formatOptions: {UTC:true}}" active="false"/>
+					</upload:attributes>
+				</upload:UploadSetItem>
+			</upload:items>
+		</upload:UploadSet>
+	</l:VerticalLayout>
+</core:FragmentDefinition>

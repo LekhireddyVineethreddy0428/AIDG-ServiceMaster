@@ -1,0 +1,104 @@
+<core:FragmentDefinition xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:upload="sap.m.upload"
+    xmlns:l="sap.ui.layout"
+    xmlns:f="sap.ui.layout.form">
+    <Dialog title="Duplicate Check" contentWidth="75%" contentHeight="75%" class="sapUiSmallMargin">
+        <customHeader>
+            <Toolbar>
+                <Title text="Duplicate Check" />
+                <ToolbarSpacer />
+            </Toolbar>
+        </customHeader>
+        <content>
+            <!-- VBox to manage spacing between tables -->
+            <VBox class="sapUiSmallMargin">
+                <!-- Current Entry Table -->
+                <Table sticky="ColumnHeaders,HeaderToolbar" growing="true" items="{currentRecord>/}" class="sapUiSmallMargin">
+                    <headerToolbar>
+                        <OverflowToolbar>
+                            <Text text="Current Entry" />
+                        </OverflowToolbar>
+                    </headerToolbar>
+                    <columns>
+                        <Column>
+                            <Text text="Activity Number" />
+                        </Column>
+                        <Column>
+                            <Text text="Short Text" />
+                        </Column>
+                        <Column>
+                            <Text text="Service Category" />
+                        </Column>
+                        <Column>
+                            <Text text="Material Group" />
+                        </Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem>
+                            <cells>
+                                <Text text="{currentRecord>asnum}" />
+                                <Text text="{currentRecord>asktx}" />
+                                <Text text="{currentRecord>astyp}" />
+                                <Text text="{currentRecord>matkl}" />
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+
+                <!-- Spacer for visual separation -->
+                <VBox height="10px"></VBox>
+
+                <!-- Potential Duplicates Table -->
+                <Table sticky="ColumnHeaders,HeaderToolbar" growing="true" items="{duplicateModel>/}" class="sapUiSmallMargin">
+                    <headerToolbar>
+                        <OverflowToolbar>
+                            <Text text="Potential Duplicates" />
+                        </OverflowToolbar>
+                    </headerToolbar>
+                    <columns>
+                        <Column>
+                            <Text text="Activity Number " />
+                        </Column>
+                        <Column>
+                            <Text text="Request Id" />
+                        </Column>
+                        <Column>
+                            <Text text="Short Text " />
+                        </Column>
+                        <Column>
+                            <Text text="Service Category" />
+                        </Column>
+                        <Column>
+                            <Text text="Material Group" />
+                        </Column>
+                        <Column>
+                            <Text text="Score" />
+                        </Column>
+                        <Column>
+                            <Text text="Rule" />
+                        </Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem>
+                            <cells>
+                                <Text text="{duplicateModel>asnum}" />
+                                <Text text="{duplicateModel>reqid}" />
+                                <Text text="{duplicateModel>asktx}" />
+                                <Text text="{duplicateModel>astyp}" />
+                                <Text text="{duplicateModel>matkl}" />
+                                <Text text="{duplicateModel>Score}" />
+                                <Text text="{duplicateModel>RuleId}" />
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </VBox>
+        </content>
+        <buttons>
+            <Button text="Ignore/Check Duplicates" type="Emphasized" press="onIgnoreDuplicates" visible="{ui>/editable}" />
+            <Button text="Cancel" press="onCloseDuplicateCheck" />
+        </buttons>
+    </Dialog>
+
+</core:FragmentDefinition>

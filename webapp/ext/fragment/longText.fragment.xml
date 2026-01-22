@@ -1,0 +1,13 @@
+<core:FragmentDefinition xmlns:core="sap.ui.core"
+    xmlns="sap.m"
+    xmlns:form="sap.ui.layout.form">
+
+    <Panel width="auto" visible="{= ${KHide} === 'X' ? false : true }">
+        <content>
+            <VBox>
+                <TextArea id="BasicTxt-1" growing="true" growingMaxLines="7" width="100%" value="{long_text}" editable="{LongTextShow}" visible="{= ${reqtyp} === 'EX' ? false : true }"/>
+            </VBox>
+        </content>
+    </Panel>
+
+</core:FragmentDefinition>

@@ -1,0 +1,57 @@
+<core:FragmentDefinition xmlns:core="sap.ui.core"
+    xmlns="sap.m"
+    xmlns:smartList="sap.ui.comp.smartlist">
+    <Popover contentWidth="350px" contentHeight="450px" modal="true" title="Roles/Users" afterClose="handleOnAfterPopOverClose" placement="Auto">
+        <customHeader>
+            <Bar>
+                <contentLeft>
+                    <Title text="Roles and Users"/>
+                </contentLeft>
+                <contentRight>
+                    <Button icon="sap-icon://decline" press="handleClosePopOver" tooltip="Close"/>
+                </contentRight>
+            </Bar>
+        </customHeader>
+        <NavContainer id="navCon">
+            <Page id="idRolesPage" showHeader="false">
+                <content>
+                    <VBox class="sapUiSmallMargin">
+                        <smartList:SmartList id="idSmartListRoles" entitySet="ZP_QU_DG_STEPS_ROLE" header="Assigned Roles" showRowCount="true" enableAutoBinding="false" beforeRebindList="onBeforeRebindList">
+                            <OverflowToolbar design="Transparent">
+                                <ToolbarSpacer />
+                            </OverflowToolbar>
+                            <List mode="None" id="idRolesList">
+                                <items>
+                                    <StandardListItem title="{AssignedRole}" info="{username}" type="Navigation" press="handleNavigation"/>
+                                </items>
+                            </List>
+                        </smartList:SmartList>
+                    </VBox>
+                </content>
+
+            </Page>
+            <Page id="idUsersPage" showNavButton="true" navButtonPress="handleNavigation" showHeader="false">
+                <content>
+                    <VBox class="sapUiSmallMargin">
+                        <smartList:SmartList id="idSmartListUsers" entitySet="ZP_QU_DG_ROLE_USER" header="Users" showRowCount="true" enableAutoBinding="false" beforeRebindList="onBeforeRebindList">
+                            <OverflowToolbar design="Transparent">
+                                <ToolbarSpacer />
+                            </OverflowToolbar>
+                            <List mode="None" id="idUsersList">
+                                <items>
+                                    <StandardListItem title="{UserName}" info="{username}" type="Inactive" />
+                                </items>
+                            </List>
+                        </smartList:SmartList>
+                    </VBox>
+                </content>
+                <footer>
+                    <OverflowToolbar>
+                        <Button text="Back" press="handleNavigation" icon="sap-icon://nav-back"></Button>
+                        <ToolbarSpacer />
+                    </OverflowToolbar>
+                </footer>
+            </Page>
+        </NavContainer>
+    </Popover>
+</core:FragmentDefinition>
