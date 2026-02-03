@@ -2,10 +2,14 @@
     xmlns="sap.m"
     xmlns:form="sap.ui.layout.form">
 
-    <Panel width="auto" visible="{= ${KHide} === 'X' ? false : true }">
+    <Panel width="auto">
         <content>
-            <VBox>
-                <TextArea id="BasicTxt-1" growing="true" growingMaxLines="7" width="100%" value="{long_text}" editable="{LongTextShow}" visible="{= ${reqtyp} === 'EX' ? false : true }"/>
+            <Text text="{= 'Language :- ' + ${mlang} }" />
+            <VBox visible="{= ${IsActiveEntity} === true ? false : true }">
+                <TextArea id="BasicTxt-1" growing="true" growingMaxLines="14" maxLength="8064" width="100%" value="{long_text_db}" editable="{LONG_TEXTHIDE}" />
+            </VBox>
+            <VBox visible="{= ${IsActiveEntity} }">
+                <TextArea id="BasicTxt-2" growing="true" growingMaxLines="14" width="100%" value="{long_text}" editable="false" />
             </VBox>
         </content>
     </Panel>

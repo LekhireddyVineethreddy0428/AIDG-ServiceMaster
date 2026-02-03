@@ -2,6 +2,9 @@
     <edmx:Reference Uri="https://sap.github.io/odata-vocabularies/vocabularies/UI.xml">
         <edmx:Include Namespace="com.sap.vocabularies.UI.v1" Alias="UI" />
     </edmx:Reference>
+     <edmx:Reference Uri="https://sap.github.io/odata-vocabularies/vocabularies/Common.xml">
+        <edmx:Include Namespace="com.sap.vocabularies.Common.v1" Alias="Common" />
+    </edmx:Reference>
     <edmx:Reference Uri="/sap/opu/odata/sap/ZP_QU_DG_SMROOT_SB/$metadata">
         <edmx:Include Namespace="cds_zp_qu_dg_smroot_sd" />
     </edmx:Reference>
@@ -42,7 +45,7 @@
                         </PropertyValue>
                     </Record>
                 </Annotation>
-                 <Annotation Term="UI.SelectionPresentationVariant" Qualifier="ServiceRequests">
+                <Annotation Term="UI.SelectionPresentationVariant" Qualifier="ServiceRequests">
                     <Record Type="UI.SelectionPresentationVariantType">
                         <PropertyValue Property="Text" String="Service Requests" />
                         <PropertyValue Property="SelectionVariant">
@@ -77,6 +80,25 @@
                     </Record>
                 </Annotation>
             </Annotations>
+
+            <Annotations Target="cds_zp_qu_dg_smroot_sd.ZP_QU_DG_SMROOTType">
+                <Annotation Term="Common.SideEffects" Qualifier="SM01">
+                    <Record Type="Common.SideEffectsType">
+                        <PropertyValue Property="SourceProperties">
+                            <Collection>
+                                <PropertyPath>meins</PropertyPath>
+                            </Collection>
+                        </PropertyValue>
+                        <PropertyValue Property="TargetProperties">
+                            <Collection>
+                                <PropertyPath>meinsClone</PropertyPath>
+                            </Collection>
+                        </PropertyValue>
+                    </Record>
+                </Annotation>
+            </Annotations>
+
+
         </Schema>
     </edmx:DataServices>
 </edmx:Edmx>

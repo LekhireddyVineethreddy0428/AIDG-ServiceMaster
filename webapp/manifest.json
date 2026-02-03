@@ -220,6 +220,12 @@
                                         "press": "onCreate",
                                         "requiresSelection": false,
                                         "logicalAction": "Create"
+                                    },
+                                    "copy": {
+                                        "id": "copyButton",
+                                        "text": "Copy",
+                                        "press": "onCopy",
+                                        "requiresSelection": true
                                     }
                                 }
                             }
@@ -232,6 +238,12 @@
                                 "EntitySet": "ZP_QU_DG_SMROOT",
                                 "Header": {
                                     "Actions": {
+                                        "idshowChanges": {
+                                            "id": "idshowChanges",
+                                            "text": "Show Changes",
+                                            "press": "onShowChanges",
+                                            "requiresSelection": false
+                                        },
                                         "idDuplicateCheck": {
                                             "id": "idDuplicateCheckButton",
                                             "text": "Duplicate Check",
@@ -243,21 +255,28 @@
                                             "text": "Update",
                                             "press": "onUpdate",
                                             "requiresSelection": false,
-                                            "applicablePath": "CustomUpdateButton"
+                                            "applicablePath": "UpdateShow"
                                         },
                                         "idEdit": {
                                             "id": "idEditButton",
                                             "text": "Edit",
                                             "press": "onEdit",
                                             "requiresSelection": false,
-                                            "applicablePath": "CustomUpdateButton"
+                                            "applicablePath": "CUST_EDITHide"
                                         },
                                         "idDelete": {
                                             "id": "idDeleteButton",
                                             "text": "Delete",
                                             "press": "onDelete",
                                             "requiresSelection": false,
-                                            "applicablePath": "CustomUpdateButton"
+                                            "applicablePath": "DeleteShow"
+                                        },
+                                        "idUnDelete": {
+                                            "id": "idUnDeleteButton",
+                                            "text": "Un Delete",
+                                            "press": "onDelete",
+                                            "requiresSelection": false,
+                                            "applicablePath": "UndeleteShow"
                                         },
                                         "Approve": {
                                             "id": "Approve",
@@ -305,7 +324,7 @@
                                             "press": "onWithdraw",
                                             "requiresSelection": false,
                                             "determining": true,
-                                            "applicablePath": "WithdrawButton"
+                                            "applicablePath": "WithdrawShow"
                                         }
                                     }
                                 }

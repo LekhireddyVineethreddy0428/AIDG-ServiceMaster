@@ -82,11 +82,11 @@
                     <items>
                         <ColumnListItem>
                             <cells>
-                                <Text text="{duplicateModel>asnum}" />
-                                <Text text="{duplicateModel>reqid}" />
-                                <Text text="{duplicateModel>asktx}" />
-                                <Text text="{duplicateModel>astyp}" />
-                                <Text text="{duplicateModel>matkl}" />
+                                <Text text="{duplicateModel>Asnum}" />
+                                <Text text="{duplicateModel>Reqid}" />
+                                <Text text="{duplicateModel>Asktx}" />
+                                <Text text="{duplicateModel>Astyp}" />
+                                <Text text="{duplicateModel>Matkl}" />
                                 <Text text="{duplicateModel>Score}" />
                                 <Text text="{duplicateModel>RuleId}" />
                             </cells>

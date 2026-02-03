@@ -52,6 +52,7 @@ sap.ui.define([
 
 
             }
+            //this._initServiceMasterSideEffects();
         },
         _attachChangeEventToFields: function () {
             var oObjectPage = this.getView()
@@ -74,6 +75,12 @@ sap.ui.define([
                 this.getView().byId(this.getView().getId() + '--Submit')?.setVisible(false)
                 this.getView().byId(this.getView().getId() + '--delete')?.setVisible(false)
                 this.getView().byId(this.getView().getId() + '--edit')?.setVisible(false)
+                let sReqTyp = this.getView().getBindingContext().getObject().reqtyp
+                if (sReqTyp == 'EX') {
+                    sap.ui.getCore().byId('aidgservicemaster::sap.suite.ui.generic.template.ObjectPage.view.Details::ZP_QU_DG_SMROOT--objectPage-anchBar-aidgservicemaster::sap.suite.ui.generic.template.ObjectPage.view.Details::ZP_QU_DG_SMROOT--template:::ObjectPageSection:::AfterFacetExtensionSectionWithKey:::sFacet::LT:::sEntitySet::ZP_QU_DG_SMROOT:::sFacetExtensionKey::1-anchor')?.setVisible(false);
+                    sap.ui.getCore().byId('aidgservicemaster::sap.suite.ui.generic.template.ObjectPage.view.Details::ZP_QU_DG_SMROOT--template:::ObjectPageSection:::AfterFacetExtensionSubSectionWithKey:::sFacet::LT:::sEntitySet::ZP_QU_DG_SMROOT:::sFacetExtensionKey::1')?.setVisible(false);
+
+                }
 
             } else {
                 this.getView().byId(this.getView().getId() + '--delete')?.setVisible(false)
@@ -376,7 +383,7 @@ sap.ui.define([
                             .catch(function (oErr) {
                                 that.getView().setBusy(false);
                                 sap.m.MessageToast.show('Something went wrong...!!!')
-                               console.log(oErr)
+                                console.log(oErr)
                             });
 
                     }
@@ -385,145 +392,162 @@ sap.ui.define([
         },
 
         // ****************_______________UPDATE________________***************
-        onUpdate: async function () {
-            // oExtensionApi = this.extensionAPI();
-            debugger
-            this.getView().setBusy(true);
+        onUpdate: async function (oEvent) {
+            this.getView().setBusy(true)
+            const oModel = this.getView().getModel();
+            let that = this;
             let oApi = this.extensionAPI;
-            let asnum = this.getView().getBindingContext().getProperty('asnum');
-            let s_no = this.getView().getBindingContext().getProperty('s_no');
-            let sReqid = this.getView().getBindingContext().getProperty('reqid');
-            let sastyp = this.getView().getBindingContext().getProperty('astyp');
+            let sMatnr = this.getView().getBindingContext().getProperty().asnum
+            let sSno = this.getView().getBindingContext().getProperty().s_no
+            let sReqId = this.getView().getBindingContext().getProperty().reqid
             let sReqtyp = "UPDATE";
-            let IsActiveEntity = this.getView().getBindingContext().getProperty('IsActiveEntity');
-            var aCheckResponse = await oApi.invokeActions("/check_screen_and_workflow", [], { s_no: s_no, reqid: sReqid, asnum: asnum, astyp: sastyp, reqtyp: sReqtyp, IsActiveEntity: IsActiveEntity });
+            let sMtart = this.getView().getBindingContext().getProperty().astyp
+            let IsActiveEntity = this.getView().getBindingContext().getProperty().IsActiveEntity
+            var aCheckResponse = await oApi.invokeActions("/check_screen_and_workflow", [], { s_no: sSno, reqid: sReqId, asnum: sMatnr, astyp: sMtart, reqtyp: sReqtyp, IsActiveEntity: IsActiveEntity });
             let sSeverity = JSON.parse(aCheckResponse[0].response.response.headers["sap-message"]).severity;
             if (sSeverity === "success") {
-                const oModel = this.getView().getModel();
+                debugger;
+                try {
+                    let aResponse = await oApi.invokeActions("/create_request_from_type", [], { s_no: sSno, reqid: sReqId, asnum: sMatnr, astyp: sMtart, reqtyp: sReqtyp, IsActiveEntity: IsActiveEntity });
+                    debugger;
+                    if (aResponse[0] && aResponse[0].response) {
 
-                var mParameters = {
-
+                        let sContextPath = aResponse[0].response.context.getDeepPath()
+                        let oContextToNavigate = new sap.ui.model.Context(oModel, sContextPath);
+                        let oNavController = this.extensionAPI.getNavigationController()
+                        that.getView().setBusy(false)
+                        oNavController.navigateInternal(oContextToNavigate);
+                    }
+                } catch (oErr) {
+                    that.getView().setBusy(true)
+                    console.log(oErr)
                 }
-
-                oModel.callFunction("/create_update_request", {
-                    method: "POST",
-                    urlParameters: mParameters,
-                    success: function (oData, response) {
-                        this.getView().setBusy(false);
-
-                        const sSapMsgHeader = response.headers['sap-message'];
-                        if (response.statusCode === "200" && sSapMsgHeader) {
-                            try {
-                                const oSapMsgObj = JSON.parse(sSapMsgHeader);
-                                const oSapMsg = oSapMsgObj.message;
-                                const oSapSeverity = oSapMsgObj.severity;
-
-                                if (oSapMsg && oSapSeverity === "info") {
-                                    sap.m.MessageBox.show(oSapMsg, {
-                                        icon: sap.m.MessageBox.Icon.WARNING,
-                                        title: "Information",
-                                    });
-                                }
-                            } catch (e) {
-                               console.log("Failed to parse sap-message header", e);
-                            }
-                        }
-
-                        try {
-                            let oModelContext = this.getOwnerComponent().getModel();
-                            let url = response.headers.location;
-                            let sPathMatch = url.match(/\/ZP_QU_DG_MARA_MASSREQ\([^\)]+\)/);
-
-                            if (sPathMatch && sPathMatch[0]) {
-                                let oContextToNavigate = new sap.ui.model.Context(oModelContext, sPathMatch[0]);
-                                let oNavController = this.extensionAPI.getNavigationController();
-                                oNavController.navigateInternal(oContextToNavigate);
-                            } else {
-                                console.warn("Navigation path not found in location header:", url);
-                            }
-                        } catch (e) {
-                           console.log("Navigation error:", e);
-                        }
-                    }.bind(this),
-
-                    error: function (oError) {
-                        this.getView().setBusy(false);
-                        MessageToast.show("Error calling function import");
-                       console.log("Function import error:", oError);
-                    }.bind(this),
-                });
             } else {
                 let sErrorMessage = JSON.parse(aCheckResponse[0].response.response.headers["sap-message"]).message;
-                // sap.m.MessageBox.error(sErrorMessage);
-                this.getView().setBusy(false);
-                // return;
+                sap.m.MessageBox.error(sErrorMessage);
+                that.getView().setBusy(false);
             }
+
         },
 
         // ****************_______________DELETE________________***************
-        onDelete: function () {
-            // oExtensionApi = this.extensionAPI();
-            debugger
-            this.getView().setBusy(true)
-            let asnum = this.getView().getBindingContext().getProperty('asnum');
-            const oModel = this.getView().getModel();
+        onDelete: async function (oEvent) {
+            const oApi = this.extensionAPI;
+            const oContext = this.getView().getBindingContext();
+            const sButtonId = oEvent.getSource().getId();
 
-            var mParameters = {
-                asnum: asnum,
-                IsCopy: false,
-                IsDelete: true,
-                IsBlock: false
+            this._sCurrentReqTyp = sButtonId.includes("idUnDeleteButton") ? "UNDELETE" : "DELETE";
+
+            let sMatnr = oContext.getProperty("asnum");
+            let sSno = oContext.getProperty("s_no");
+            let sReqId = oContext.getProperty("reqid");
+            let sMtart = oContext.getProperty("astyp");
+            let IsActiveEntity = oContext.getProperty("IsActiveEntity");
+
+            try {
+                let aCheckResponse = await oApi.invokeActions(
+                    "/check_screen_and_workflow",
+                    [],
+                    {
+                        s_no: sSno,
+                        reqid: sReqId,
+                        asnum: sMatnr,
+                        astyp: sMtart,
+                        reqtyp: this._sCurrentReqTyp,
+                        IsActiveEntity: IsActiveEntity
+                    }
+                );
+
+                let oSapMessage = JSON.parse(
+                    aCheckResponse[0].response.response.headers["sap-message"]
+                );
+
+                if (oSapMessage.severity === "success") {
+                    let aResponse = await oApi.invokeActions(
+                        "/create_request_from_type",
+                        [],
+                        {
+                            s_no: sSno,
+                            reqid: sReqId,
+                            asnum: sMatnr,
+                            astyp: sMtart,
+                            reqtyp: this._sCurrentReqTyp,
+                            IsActiveEntity: IsActiveEntity
+                        }
+                    );
+
+                    if (aResponse[0] && aResponse[0].response) {
+                        if (!this._pDialog) {
+                            this._pDialog = this.loadFragment({
+                                name: "aidgservicemaster.ext.fragment.Delete"
+                            });
+                        }
+
+                        const oDialog = await this._pDialog;
+                        oDialog.setBusy(false);
+                        oDialog.open();
+                    }
+                } else {
+                    sap.m.MessageBox.error(oSapMessage.message);
+                }
+            } catch (oErr) {
+                console.error(oErr);
             }
+        },
 
+        onDeleteCloseDialog: async function () {
+            const oDialog = await this._pDialog;
+            oDialog.close();
+        },
 
-            oModel.callFunction("/create_update_request", {
+        handleDelete: async function () {
+            const oView = this.getView();
+            const oModel = oView.getModel();
+            const oContext = oView.getBindingContext();
+
+            let sMatnr = oContext.getProperty("asnum");
+            let sSno = oContext.getProperty("s_no");
+            let sReqId = oContext.getProperty("reqid");
+            let IsActiveEntity = oContext.getProperty("IsActiveEntity");
+
+            const oDialog = await this._pDialog;
+            const oDialogContext = oDialog.getBindingContext();
+
+            let sReqPriority = oDialogContext.getProperty("reqprio");
+            let sReqDescription = oDialogContext.getProperty("req_desc");
+
+            var oPayload = {
+                s_no: sSno,
+                reqid: sReqId,
+                asnum: sMatnr,
+                IsActiveEntity: IsActiveEntity,
+                reqtyp: this._sCurrentReqTyp,
+                ReqPriority: sReqPriority,
+                ReqDescription: sReqDescription
+            };
+
+            oDialog.setBusy(true);
+            oModel.callFunction("/create_delete_undelete_request", {
                 method: "POST",
-                urlParameters: mParameters,
-                success: function (oData, response) {
-                    this.getView().setBusy(false);
-
-                    const sSapMsgHeader = response.headers['sap-message'];
-                    if (response.statusCode === "200" && sSapMsgHeader) {
-                        try {
-                            const oSapMsgObj = JSON.parse(sSapMsgHeader);
-                            const oSapMsg = oSapMsgObj.message;
-                            const oSapSeverity = oSapMsgObj.severity;
-
-                            if (oSapMsg && oSapSeverity === "info") {
-                                sap.m.MessageBox.show(oSapMsg, {
-                                    icon: sap.m.MessageBox.Icon.WARNING,
-                                    title: "Information",
-                                });
-                            }
-                        } catch (e) {
-                           console.log("Failed to parse sap-message header", e);
-                        }
-                    }
-
-                    try {
-                        let oModelContext = this.getOwnerComponent().getModel();
-                        let url = response.headers.location;
-                        let sPathMatch = url.match(/\/ZP_QU_DG_MARA_MASSREQ\([^\)]+\)/);
-
-                        if (sPathMatch && sPathMatch[0]) {
-                            let oContextToNavigate = new sap.ui.model.Context(oModelContext, sPathMatch[0]);
-                            let oNavController = this.extensionAPI.getNavigationController();
-                            oNavController.navigateInternal(oContextToNavigate);
-                        } else {
-                            console.warn("Navigation path not found in location header:", url);
-                        }
-                    } catch (e) {
-                       console.log("Navigation error:", e);
-                    }
+                urlParameters: oPayload,
+                success: function (oData) {
+                    oDialog.setBusy(false);
+                    this.onDeleteCloseDialog();
+                    let sPath = oModel.createKey("/ZP_QU_DG_SMROOT", {
+                        s_no: oData.s_no,
+                        reqid: oData.reqid,
+                        asnum: oData.asnum,
+                        IsActiveEntity: oData.IsActiveEntity
+                    });
+                    let oContextToNavigate = new sap.ui.model.Context(oModel, sPath);
+                    let oNavController = this.extensionAPI.getNavigationController();
+                    oNavController.navigateInternal(oContextToNavigate);
                 }.bind(this),
-
-                error: function (oError) {
-                    this.getView().setBusy(false);
-                    MessageToast.show("Error calling function import");
-                   console.log("Function import error:", oError);
-                }.bind(this),
+                error: function () {
+                    oDialog.setBusy(false);
+                    sap.m.MessageBox.error("Action Failed");
+                }
             });
-
         },
         // ****************_______________APPROVE________________***************
         onApprove: function (oEvent) {
@@ -579,6 +603,11 @@ sap.ui.define([
             });
         },
 
+        ///****************_______________EDIT_____________________**************
+        onEdit: function (oEvent) {
+
+        },
+
         // ****************_______________REJECT________________***************
         onReject: function (oEvent) {
             sap.ui.core.BusyIndicator.show(0)
@@ -610,11 +639,6 @@ sap.ui.define([
                 }
             })
         },
-        ///****************_______________EDIT_____________________**************
-        onEdit:function (oEvent){
-            
-        },
-
         onCancel: function () {
             if (this._rejectDialog) {
                 this._rejectDialog.close();
@@ -687,7 +711,7 @@ sap.ui.define([
 
                 } catch (oError) {
                     sap.m.MessageToast.show("Rejection failed, please try again.");
-                   console.log("Error:", oError);
+                    console.log("Error:", oError);
                 } finally {
                     //this._rejectDialog.setBusy(false);
                 }
@@ -777,7 +801,7 @@ sap.ui.define([
                 }.bind(this),
                 error: function (oErr) {
                     debugger
-                   console.log(oErr);
+                    console.log(oErr);
                 }
             });
         },
@@ -816,7 +840,7 @@ sap.ui.define([
                 this._SetCommentsModel(aAllCommentsList);
 
             } catch (error) {
-               // sap.m.MessageToast.show("Error Reading Comments data..!!");
+                // sap.m.MessageToast.show("Error Reading Comments data..!!");
                 console.log("Error fetching backend comments:", error);
             } finally {
                 oCommentLayout.setBusy(false)
@@ -844,6 +868,144 @@ sap.ui.define([
             localModel.setData({ "EntryCollection": aComments });
             this.getView().setModel(localModel, "localCommentModel");
         },
+
+
+        //______________________________Show Changes _____________________________
+        onShowChanges: async function (oEvent) {
+            const oView = this.getView();
+            oView.setBusy(true);
+
+            try {
+                if (!oEvent) {
+                    oView.setBusy(false);
+                    return;
+                }
+                if (!this.showChangesFragment) {
+                    this.showChangesFragment = await this._loadFragment();
+                    if (!this.showChangesFragment) {
+                        throw new Error("Fragment creation failed");
+                    }
+                }
+
+                // Load data BEFORE opening dialog
+                await this.getDataonShowchanges();
+
+                // Open dialog
+                if (this.showChangesFragment && this.showChangesFragment.open) {
+                    this.showChangesFragment.open();
+                }
+
+            } catch (oError) {
+                oView.setBusy(false);
+                console.error("Error in onShowChanges:", oError);
+                sap.m.MessageBox.error(oError.message || "An error occurred", {
+                    title: "Error"
+                });
+                return; // Add return to prevent finally from overriding error state
+            } finally {
+                oView.setBusy(false);
+            }
+        },
+
+        _loadFragment: function () {
+            return new Promise((resolve, reject) => {
+                try {
+                    const oFragment = sap.ui.xmlfragment(
+                        "aidgservicemaster.ext.fragment.showChanges",
+                        this
+                    );
+
+                    if (oFragment) {
+                        this.getView().addDependent(oFragment);
+                        resolve(oFragment);
+                    } else {
+                        reject(new Error("Fragment creation returned null"));
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        },
+
+        onCloseshowChanges: function () {
+            if (this.showChangesFragment?.close) {
+                this.showChangesFragment.close();
+            }
+        },
+
+        getDataonShowchanges: function () {
+            return new Promise(function (resolve, reject) {
+                const oModel = this.getOwnerComponent().getModel();
+                let sReqid = this.getView().getBindingContext().getProperty('reqid');
+
+                // Check if the OData model is properly loaded
+                if (!oModel) {
+                    reject(new Error("OData Model not found."));
+                    return;
+                }
+                let sPath = "/ZI_QU_DG_SM_GETCHANGELOG(reqid='" + sReqid + "')/Set";
+                oModel.read(sPath, {
+                    success: function (oData) {
+                        var oJSONModel = this.getView().getModel("localReqLog");
+
+                        // Create JSON model if it doesn't exist
+                        if (!oJSONModel) {
+                            oJSONModel = new sap.ui.model.json.JSONModel();
+                            this.getView().setModel(oJSONModel, "localReqLog");
+                        }
+
+                        // Set the data to the model
+                        oJSONModel.setData(oData.results || []);
+                        resolve(oData);
+                    }.bind(this),
+                    error: function (oErr) {
+                        console.error("Read failed:", oErr);
+                        reject(oErr);
+                    }.bind(this)
+                });
+            }.bind(this));
+        },
+
+
+        // _initServiceMasterSideEffects: function () {
+        //     const oView = this.getView();
+        //     const oModel = oView.getModel();
+        //     // 1. Manually set our hardcoded fields into a local JSON Model
+        //     const aFields = [
+        //         { "fieldName": "astyp", "entitySet": "ZP_QU_DG_SMROOT" },
+        //         { "fieldName": "matkl", "entitySet": "ZP_QU_DG_SMROOT" },
+        //         { "fieldName": "meins", "entitySet": "ZP_QU_DG_SMROOT" }
+        //     ];
+
+        //     oView.setModel(new JSONModel(aFields), "localSideEffectConfig");
+
+        //     // 2. Prevent duplicate listeners
+        //     oModel.detachPropertyChange(this._handleSMFieldChange, this);
+
+        //     // 3. Attach the global listener
+        //     oModel.attachPropertyChange(this._handleSMFieldChange, this);
+
+        //     console.log("Service Master: Hardcoded Side Effects Initialized");
+        // },
+
+        // _handleSMFieldChange: function (oEvent) {
+        //     const oExtensionAPI = this.extensionAPI;
+        //     const sPath = oEvent.getParameter("path");
+
+        //     // Normalize path (metadata fields are direct properties)
+        //     const sChangedField = sPath.includes("/") ? sPath.split("/").pop() : sPath;
+
+        //     const oLocalConfig = this.getView().getModel("localSideEffectConfig");
+        //     const aConfig = oLocalConfig.getData();
+
+        //     // 4. Check if the changed field is in our test list
+        //     const oMatch = aConfig.find(item => item.fieldName === sChangedField);
+
+        //     if (oMatch) {
+        //         MessageToast.show("Side Effect: Refreshing " + oMatch.entitySet + " due to " + sChangedField);
+        //         oExtensionAPI.refresh(oMatch.entitySet);
+        //     }
+        // }
 
     }
 });

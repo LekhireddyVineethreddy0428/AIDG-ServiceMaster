@@ -14,8 +14,14 @@ sap.ui.define([
         onAfterRendering: function () {
             let oCreateBtn0 = this.getView().byId(this.getView().getId() + '--addEntry-tab0')
             let oCreateBtn1 = this.getView().byId(this.getView().getId() + '--addEntry-tab1')
-            oCreateBtn0.setVisible(false)
-            oCreateBtn1.setVisible(false)
+            let oDeleteBtn0 = this.getView().byId(this.getView().getId() + '--deleteEntry-tab0')
+            let oDeleteBtn1 = this.getView().byId(this.getView().getId() + '--deleteEntry-tab1')
+            let oCopyBtn1 = this.getView().byId(this.getView().getId() + '--copyButton-tab1')
+            oCreateBtn0?.setVisible(false)
+            oCreateBtn1?.setVisible(false)
+            oDeleteBtn0?.setVisible(false)
+            oDeleteBtn1?.setVisible(false)
+            oCopyBtn1?.setVisible(false)
         },
         onCreate: async function () {
             let that = this;
@@ -73,9 +79,11 @@ sap.ui.define([
                             debugger;
                             let oContextToNavigate = new sap.ui.model.Context(oModel, sPath);
                             let oNavController = oApi.getNavigationController();
+                            let Reqid = oContextToNavigate.getProperty("reqid");
                             debugger;
                             let oPayload = {
-                                astyp: sAstyp
+                                astyp: sAstyp,
+                                AsnumDisplay: Reqid
                             }
 
                             oModel.update(sPath, oPayload, {
@@ -138,5 +146,51 @@ sap.ui.define([
 
             })
         },
+        onBeforeRebindTableExtension: function (oEvent) {
+            let sTable2 = this.getView().createId("listReport-tab0");
+            let sTable1 = this.getView().createId("listReport-tab1");
+            let sTableId = oEvent.getSource().getId()
+            if (sTableId === sTable1) {
+                oEvent.getParameter("bindingParams").sorter.push(new sap.ui.model.Sorter("DraftEntityLastChangeDateTime", true));
+                oEvent.getParameter("bindingParams").sorter.push(new sap.ui.model.Sorter("req_changed_on", true));
+
+            }
+        },
+        onCopy: async function (oEvent) {
+            this.getView().setBusy(true)
+            const oModel = this.getView().getModel();
+            let that = this;
+            let oApi = this.extensionAPI;
+            let sMatnr = oApi.getSelectedContexts()[0].getObject().asnum
+            let sSno = oApi.getSelectedContexts()[0].getObject().s_no
+            let sReqId = oApi.getSelectedContexts()[0].getObject().reqid
+            let sReqtyp = "COPY";
+            let sMtart = oApi.getSelectedContexts()[0].getObject().astyp
+            let IsActiveEntity = oApi.getSelectedContexts()[0].getObject().IsActiveEntity
+            var aCheckResponse = await oApi.invokeActions("/check_screen_and_workflow", [], { s_no: sSno, reqid: sReqId, asnum: sMatnr, astyp: sMtart, reqtyp: sReqtyp, IsActiveEntity: IsActiveEntity });
+            let sSeverity = JSON.parse(aCheckResponse[0].response.response.headers["sap-message"]).severity;
+            if (sSeverity === "success") {
+                debugger;
+                try {
+                    let aResponse = await oApi.invokeActions("/create_request_from_type", [], { s_no: sSno, reqid: sReqId, asnum: sMatnr, astyp: sMtart, reqtyp: sReqtyp, IsActiveEntity: IsActiveEntity });
+                    if (aResponse[0] && aResponse[0].response) {
+                        let sContextPath = aResponse[0].response.context.getDeepPath()
+                        let oContextToNavigate = new sap.ui.model.Context(oModel, sContextPath);
+                        let oNavController = this.extensionAPI.getNavigationController()
+                        that.getView().setBusy(false)
+                        oNavController.navigateInternal(oContextToNavigate);
+                    }
+                } catch (oErr) {
+                    that.getView().setBusy(true)
+                    console.log(oErr)
+                }
+            } else {
+                let sErrorMessage = JSON.parse(aCheckResponse[0].response.response.headers["sap-message"]).message;
+                sap.m.MessageBox.error(sErrorMessage);
+                that.getView().setBusy(false);
+            }
+
+        },
+
     }
 });
