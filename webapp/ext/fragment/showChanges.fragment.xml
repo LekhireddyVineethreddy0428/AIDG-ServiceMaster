@@ -1,0 +1,42 @@
+<core:FragmentDefinition xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+    <Dialog id="myChangesDialog" title="Changed Values" class="sapUiContentPadding" contentWidth="50%" contentHeight="50%" resizable="true">
+        <content>
+            <VBox class="sapUiSmallMargin">
+                <Table id="changesTable" inset="false" items="{localReqLog>/}" enableBusyIndicator="true" noDataText="we couldn't find any data." sticky="ColumnHeaders" growing="true">
+                    <columns>
+                        <Column width="25%">
+                            <Text text="Section" />
+                        </Column>
+                        <Column width="25%">
+                            <Text text="Field Name" />
+                        </Column>
+                        <Column width="25%">
+                            <Text text="Old Value" />
+                        </Column>
+                        <Column width="25%">
+                            <Text text="New Value" />
+                        </Column>
+                        <Column width="25%">
+                            <Text text="Created By" />
+                        </Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem vAlign="Middle">
+                            <cells>
+                                <Text text="{localReqLog>table_description}" />
+                                <Text text="{localReqLog>field_description}" />
+                                <Text text="{localReqLog>value_old}" />
+                                <Text text="{localReqLog>value_new}" />
+                                <Text text="{localReqLog>created_by}" />
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </VBox>
+        </content>
+        <buttons>
+            <Button text="Close" press="onCloseshowChanges" />
+        </buttons>
+    </Dialog>
+</core:FragmentDefinition>

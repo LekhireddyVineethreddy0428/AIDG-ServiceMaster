@@ -79,7 +79,7 @@ sap.ui.define([
                 if (sReqTyp == 'EX') {
                     sap.ui.getCore().byId('aidgservicemaster::sap.suite.ui.generic.template.ObjectPage.view.Details::ZP_QU_DG_SMROOT--objectPage-anchBar-aidgservicemaster::sap.suite.ui.generic.template.ObjectPage.view.Details::ZP_QU_DG_SMROOT--template:::ObjectPageSection:::AfterFacetExtensionSectionWithKey:::sFacet::LT:::sEntitySet::ZP_QU_DG_SMROOT:::sFacetExtensionKey::1-anchor')?.setVisible(false);
                     sap.ui.getCore().byId('aidgservicemaster::sap.suite.ui.generic.template.ObjectPage.view.Details::ZP_QU_DG_SMROOT--template:::ObjectPageSection:::AfterFacetExtensionSubSectionWithKey:::sFacet::LT:::sEntitySet::ZP_QU_DG_SMROOT:::sFacetExtensionKey::1')?.setVisible(false);
-
+                    sap.ui.getCore().byId('aidgservicemaster::sap.suite.ui.generic.template.ObjectPage.view.Details::ZP_QU_DG_SMROOT--action::idshowChanges')?.setVisible(false);
                 }
 
             } else {
@@ -366,7 +366,7 @@ sap.ui.define([
 
                         let oData = that.getView().getBindingContext().getObject()
                         let oPayload = {
-                            s_n0: oData.s_no,
+                            s_no: oData.s_no,
                             reqid: oData.reqid,
                             asnum: oData.asnum,
                             IsActiveEntity: oData.IsActiveEntity,
@@ -488,7 +488,7 @@ sap.ui.define([
                         oDialog.open();
                     }
                 } else {
-                    sap.m.MessageBox.error(oSapMessage.message);
+                    // sap.m.MessageBox.error(oSapMessage.message);
                 }
             } catch (oErr) {
                 console.error(oErr);
@@ -543,9 +543,11 @@ sap.ui.define([
                     let oNavController = this.extensionAPI.getNavigationController();
                     oNavController.navigateInternal(oContextToNavigate);
                 }.bind(this),
-                error: function () {
+                error: function (oError) {
                     oDialog.setBusy(false);
-                    sap.m.MessageBox.error("Action Failed");
+                    var sMessage = JSON.parse(oError.responseText)
+                        .error.message.value;
+                    sap.m.MessageBox.error(sMessage);
                 }
             });
         },
@@ -558,8 +560,9 @@ sap.ui.define([
             let reqid = this.getView().getBindingContext().getProperty().reqid;
             let s_no = this.getView().getBindingContext().getProperty().s_no;
             let IsActiveEntity = this.getView().getBindingContext().getProperty().IsActiveEntity;
+            let step = this._Sequence;
             let wi_id = this._WorkItemId;
-            var oPromise = oApi.invokeActions("/approve", [], { s_no: s_no, reqid: reqid, asnum: asnum, WiId: wi_id, Step: "0", IsActiveEntity: IsActiveEntity });
+            var oPromise = oApi.invokeActions("/approve", [], { s_no: s_no, reqid: reqid, asnum: asnum, WiId: wi_id, Step: step, IsActiveEntity: IsActiveEntity });
             oPromise
                 .then(function (aResponse) {
                     debugger;
@@ -589,7 +592,13 @@ sap.ui.define([
                 sap.m.MessageToast.show("Save the data before submitting");
                 return
             }
-
+            let oApi = this.extensionAPI;
+            let asnum = this.getView().getBindingContext().getProperty().asnum;
+            let reqid = this.getView().getBindingContext().getProperty().reqid;
+            let s_no = this.getView().getBindingContext().getProperty().s_no;
+            let IsActiveEntity = this.getView().getBindingContext().getProperty().IsActiveEntity;
+            let step = this._Sequence;
+            let wi_id = this._WorkItemId;
             let that = this;
             sap.m.MessageBox.show("Submit Request?", {
                 title: 'Are you sure want to Submit',
@@ -597,7 +606,20 @@ sap.ui.define([
                 emphasizedAction: sap.m.MessageBox.Action.OK,
                 onClose: function (oAction) {
                     if (oAction === sap.m.MessageBox.Action.OK) {
-                        that.onApprove()
+                        var oPromise = oApi.invokeActions("/check_step_based_mandatory", [], { s_no: s_no, reqid: reqid, asnum: asnum, WiId: wi_id, Step: step, IsActiveEntity: IsActiveEntity });
+                        oPromise
+                            .then(function (aResponse) {
+                                debugger;
+                                let sSeverity = JSON.parse(aResponse[0].response.response.headers["sap-message"]).severity;
+                                if (sSeverity === "success") {
+                                    that.onApprove()
+                                } else {
+                                    sap.m.MessageToast.show("Please Fill all the Mandatory Fileds");
+                                }
+                            })
+                            .catch(function (oError) {
+                                sap.m.MessageToast.show(oError);
+                            });
                     }
                 }
             });

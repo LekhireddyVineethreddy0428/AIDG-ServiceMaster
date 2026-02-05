@@ -2,7 +2,7 @@
     <edmx:Reference Uri="https://sap.github.io/odata-vocabularies/vocabularies/UI.xml">
         <edmx:Include Namespace="com.sap.vocabularies.UI.v1" Alias="UI" />
     </edmx:Reference>
-     <edmx:Reference Uri="https://sap.github.io/odata-vocabularies/vocabularies/Common.xml">
+    <edmx:Reference Uri="https://sap.github.io/odata-vocabularies/vocabularies/Common.xml">
         <edmx:Include Namespace="com.sap.vocabularies.Common.v1" Alias="Common" />
     </edmx:Reference>
     <edmx:Reference Uri="/sap/opu/odata/sap/ZP_QU_DG_SMROOT_SB/$metadata">
@@ -38,12 +38,52 @@
                             <Record Type="UI.PresentationVariantType">
                                 <PropertyValue Property="Visualizations">
                                     <Collection>
-                                        <AnnotationPath>@UI.LineItem</AnnotationPath>
+                                        <AnnotationPath>@UI.LineItem#MastersTable</AnnotationPath>
                                     </Collection>
                                 </PropertyValue>
                             </Record>
                         </PropertyValue>
                     </Record>
+                </Annotation>
+                <Annotation Term="UI.LineItem" Qualifier="MastersTable">
+                    <Collection>
+
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Criticality" Path="LVORM_Criticality"/>
+                            <PropertyValue Property="Value" Path="asnum"/>
+                            <Annotation Term="UI.Importance" EnumMember="UI.ImportanceType/High" />
+                        </Record>
+
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="astyp"/>
+                            <Annotation Term="UI.Importance" EnumMember="UI.ImportanceType/High" />
+                        </Record>
+
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="asktx"/>
+                            <Annotation Term="UI.Importance" EnumMember="UI.ImportanceType/High" />
+                        </Record>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="meins"/>
+                            <Annotation Term="UI.Importance" EnumMember="UI.ImportanceType/High" />
+                        </Record>
+
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="reqtyp"/>
+                            <Annotation Term="UI.Importance" EnumMember="UI.ImportanceType/High" />
+                        </Record>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="ernam"/>
+                            <Annotation Term="UI.Importance" EnumMember="UI.ImportanceType/High" />
+                        </Record>
+
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="erdat"/>
+                            <Annotation Term="UI.Importance" EnumMember="UI.ImportanceType/High" />
+                        </Record>
+
+                    </Collection>
+                    <Annotation Term="UI.Criticality" Path="lvorm"/>
                 </Annotation>
                 <Annotation Term="UI.SelectionPresentationVariant" Qualifier="ServiceRequests">
                     <Record Type="UI.SelectionPresentationVariantType">
@@ -72,13 +112,47 @@
                             <Record Type="UI.PresentationVariantType">
                                 <PropertyValue Property="Visualizations">
                                     <Collection>
-                                        <AnnotationPath>@UI.LineItem</AnnotationPath>
+                                        <AnnotationPath>@UI.LineItem#RequestsTable</AnnotationPath>
                                     </Collection>
                                 </PropertyValue>
                             </Record>
                         </PropertyValue>
                     </Record>
                 </Annotation>
+                <Annotation Term="UI.LineItem" Qualifier="RequestsTable">
+                    <Collection>
+
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="reqid"/>
+                        </Record>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="astyp"/>
+                        </Record>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="asktx"/>
+                        </Record>
+
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="reqtyp"/>
+                        </Record>
+
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="req_desc"/>
+                        </Record>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="req_status"/>
+                        </Record>
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="req_created_by"/>
+                        </Record>
+
+                        <Record Type="UI.DataField">
+                            <PropertyValue Property="Value" Path="req_created_on"/>
+                        </Record>
+
+                    </Collection>
+                </Annotation>
+
             </Annotations>
 
             <Annotations Target="cds_zp_qu_dg_smroot_sd.ZP_QU_DG_SMROOTType">

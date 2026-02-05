@@ -4,9 +4,10 @@
 
     <Panel width="auto">
         <content>
-            <Text text="{= 'Language :- ' + ${mlang} }" />
+            <Text text="{= 'Language :- ' + ${mlang} }"  wrapping="true"/>
             <VBox visible="{= ${IsActiveEntity} === true ? false : true }">
-                <TextArea id="BasicTxt-1" growing="true" growingMaxLines="14" maxLength="8064" width="100%" value="{long_text_db}" editable="{LONG_TEXTHIDE}" />
+                <Label text="Long Text" design="Bold" class="sapUiTinyMarginTop" required="{LONG_TEXT_MANDATORY}" />
+                <TextArea id="BasicTxt-1" growing="true" growingMaxLines="14" maxLength="8064" width="100%" value="{long_text_db}" editable="{LONG_TEXT_EDITABLE}" />
             </VBox>
             <VBox visible="{= ${IsActiveEntity} }">
                 <TextArea id="BasicTxt-2" growing="true" growingMaxLines="14" width="100%" value="{long_text}" editable="false" />
