@@ -8,13 +8,13 @@
     xmlns:sform="sap.ui.comp.smartform"
     xmlns:form="sap.ui.layout.form"
     xmlns:smartField="sap.ui.comp.smartfield">
-    <Dialog id="idrejct" title="Reject">
+    <Dialog id="idrejct" title="Reject" contentWidth="300px" contentHeight="170px" >
         <content>
-            <form:SimpleForm editable="true" adjustLabelSpan="true">
+            <form:SimpleForm editable="true" labelSpanL="12" labelSpanM="12" adjustLabelSpan="false">
                 <Label text="Back To" labelFor="idrejectip" />
-                <ComboBox id="idrejectip" name="Send to Step" items="{oRejModel>/}" showSecondaryValues="true" selectedKey="1-1" required="true">
+                <MultiComboBox id="idrejectip" name="Send to Step" items="{oRejModel>/}" showSecondaryValues="true" selectionChange="onStepSelectionChange" required="true">
                     <core:ListItem key="{oRejModel>step}" text="{oRejModel>step_name}" additionalText="{oRejModel>step}" />
-                </ComboBox>
+                </MultiComboBox>
                 <Label text="Comment"/>
                 <TextArea id="idRejectComment" required="true" liveChange="onChangeInputArea"></TextArea>
             </form:SimpleForm>

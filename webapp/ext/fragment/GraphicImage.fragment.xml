@@ -1,0 +1,6 @@
+<core:FragmentDefinition xmlns:core="sap.ui.core"
+    xmlns="sap.m">
+    <VBox class="sapUiMediumMargin" alignItems="Center" justifyContent="Center" width="100%">
+        <Image src="{graphic_to_display}" densityAware="false" width="150px" height="150px" alt="Dynamic Image Content" />
+    </VBox>
+</core:FragmentDefinition>

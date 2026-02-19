@@ -40,20 +40,21 @@
                     "odataVersion": "2.0"
                 }
             },
-            "ZP_QU_DG_MYTASK_BND_SRV": {
-                "uri": "/sap/opu/odata/sap/ZP_QU_DG_MYTASK_BND/",
-                "type": "OData",
-                "settings": {
-                    "localUri": "localService/mainService/metadata.xml",
-                    "odataVersion": "2.0"
-                }
-            },
             "ZQU_DG_ATTACHMENT_COMMENT_SRV": {
                 "uri": "/sap/opu/odata/sap/ZQU_DG_ATTACHMENT_COMMENT_SRV/",
                 "type": "OData",
                 "settings": {
                     "annotations": [],
                     "localUri": "localService/ZQU_DG_ATTACHMENT_COMMENT_SRV/metadata.xml",
+                    "odataVersion": "2.0"
+                }
+            },
+            "ZP_QU_DG_MYTASK_BND": {
+                "uri": "/sap/opu/odata/sap/ZP_QU_DG_MYTASK_BND/",
+                "type": "OData",
+                "settings": {
+                    "annotations": [],
+                    "localUri": "localService/ZP_QU_DG_MYTASK_BND/metadata.xml",
                     "odataVersion": "2.0"
                 }
             },
@@ -163,8 +164,13 @@
                     }
                 }
             },
-            "ZP_QU_DG_MYTASK_BND": {
-                "dataSource": "ZP_QU_DG_MYTASK_BND_SRV",
+            "ZQU_DG_ATTACHMENT_COMMENT_SRV": {
+                "dataSource": "ZQU_DG_ATTACHMENT_COMMENT_SRV",
+                "preload": true,
+                "settings": {}
+            },
+            "CV_ATTACHMENT_SRV": {
+                "dataSource": "CV_ATTACHMENT_SRV",
                 "preload": true,
                 "settings": {
                     "defaultBindingMode": "TwoWay",
@@ -175,13 +181,8 @@
                     }
                 }
             },
-            "ZQU_DG_ATTACHMENT_COMMENT_SRV": {
-                "dataSource": "ZQU_DG_ATTACHMENT_COMMENT_SRV",
-                "preload": true,
-                "settings": {}
-            },
-            "CV_ATTACHMENT_SRV": {
-                "dataSource": "CV_ATTACHMENT_SRV",
+            "ZP_QU_DG_MYTASK_BND": {
+                "dataSource": "ZP_QU_DG_MYTASK_BND",
                 "preload": true,
                 "settings": {
                     "defaultBindingMode": "TwoWay",
@@ -334,6 +335,14 @@
                 },
                 "sap.ui.viewExtensions": {
                     "sap.suite.ui.generic.template.ObjectPage.view.Details": {
+                        "BeforeFacet|ZP_QU_DG_SMROOT|SSC": {
+                            "className": "sap.ui.core.Fragment",
+                            "fragmentName": "aidgservicemaster.ext.fragment.GraphicImage",
+                            "type": "XML",
+                            "sap.ui.generic.app": {
+                                "title": "Graphic Image"
+                            }
+                        },
                         "AfterFacet|ZP_QU_DG_SMROOT|LT": {
                             "className": "sap.ui.core.Fragment",
                             "fragmentName": "aidgservicemaster.ext.fragment.longText",
@@ -351,9 +360,9 @@
                             }
                         },
                         "AfterFacet|ZP_QU_DG_SMROOT|LT|2": {
-                            "type": "XML",
                             "className": "sap.ui.core.Fragment",
                             "fragmentName": "aidgservicemaster.ext.fragment.Attachments",
+                            "type": "XML",
                             "sap.ui.generic.app": {
                                 "title": "Attachments"
                             }

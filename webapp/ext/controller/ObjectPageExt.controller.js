@@ -20,11 +20,21 @@ sap.ui.define([
                 if (oStartUpParamsModel && oStartUpParamsModel.getData().params) {
                     const oStartUpParamsModelData = oStartUpParamsModel.getData();
                     this._bIsNavigatingFromExternal = oStartUpParamsModelData?.isNavigatingFromExternal ?? false;
-                    this._WorkItemId = oStartUpParamsModelData.params.WIID;
+                    this._WorkItemIdExt = oStartUpParamsModelData.params.WIID;
+                    this._SequenceExt = oStartUpParamsModelData.params.SEQUENCE;
+                    //this.getTheStatusOfRequest();
+                    sap.ui.getCore().byId('aidgservicemaster::sap.suite.ui.generic.template.ObjectPage.view.Details::ZP_QU_DG_SMROOT--activate')?.setText('Save');
                 } else {
                     this._bIsNavigatingFromExternal = false;
                 }
 
+                let sReqTyp = this.getView().getBindingContext().getObject().reqtyp
+                if (sReqTyp !== "CREATE_MAS") {
+                    const oField = this.byId("GeneralInformationV::astyp::Field");
+                    if (oField) {
+                        oField.setEditable(false);
+                    }
+                }
                 //GETTING THE WORK ITEM DETAILS
                 let sReqid = this.getView().getBindingContext().getProperty('reqid')
                 let oMyTaskModel = this.getOwnerComponent().getModel("MyTask")
@@ -54,6 +64,8 @@ sap.ui.define([
             }
             //this._initServiceMasterSideEffects();
         },
+
+        //_____________Event Handlers_____________//
         _attachChangeEventToFields: function () {
             var oObjectPage = this.getView()
             var aControls = oObjectPage.findAggregatedObjects(true);
@@ -81,14 +93,24 @@ sap.ui.define([
                     sap.ui.getCore().byId('aidgservicemaster::sap.suite.ui.generic.template.ObjectPage.view.Details::ZP_QU_DG_SMROOT--template:::ObjectPageSection:::AfterFacetExtensionSubSectionWithKey:::sFacet::LT:::sEntitySet::ZP_QU_DG_SMROOT:::sFacetExtensionKey::1')?.setVisible(false);
                     sap.ui.getCore().byId('aidgservicemaster::sap.suite.ui.generic.template.ObjectPage.view.Details::ZP_QU_DG_SMROOT--action::idshowChanges')?.setVisible(false);
                 }
-
+                if (this.getView().getModel('ui').getProperty('/editable') === false) {
+                    sap.ui.getCore().byId(this.getView().getId() + '--idUploadSet-uploader-fu_button')?.setVisible(false);
+                    sap.ui.getCore().byId(this.getView().getId() + '--idUploadSet-uploadButton')?.setVisible(false);
+                    sap.ui.getCore().byId(this.getView().getId() + '--_IDGenFeedInput1-button')?.setVisible(false);
+                }
             } else {
                 this.getView().byId(this.getView().getId() + '--delete')?.setVisible(false)
                 this.getView().byId(this.getView().getId() + '--edit')?.setVisible(false)
+                if (this.getView().getModel('ui').getProperty('/editable') === true) {
+                    sap.ui.getCore().byId(this.getView().getId() + '--action::idCoustomEdit')?.setVisible(false);
+                } else {
+                    sap.ui.getCore().byId(this.getView().getId() + '--idUploadSet-uploader-fu_button')?.setVisible(false);
+                    sap.ui.getCore().byId(this.getView().getId() + '--idUploadSet-uploadButton')?.setVisible(false);
+                    sap.ui.getCore().byId(this.getView().getId() + '--_IDGenFeedInput1-button')?.setVisible(false);
+                }
+
             }
         },
-
-
 
         /// --------------------------------- status and Logs Section------------------------------------------------/// 
 
@@ -552,7 +574,7 @@ sap.ui.define([
             });
         },
         // ****************_______________APPROVE________________***************
-        onApprove: function (oEvent) {
+        onApprove: function (oEvent, ApporveStatus) {
             debugger
             let that = this;
             let oApi = this.extensionAPI;
@@ -560,9 +582,15 @@ sap.ui.define([
             let reqid = this.getView().getBindingContext().getProperty().reqid;
             let s_no = this.getView().getBindingContext().getProperty().s_no;
             let IsActiveEntity = this.getView().getBindingContext().getProperty().IsActiveEntity;
-            let step = this._Sequence;
-            let wi_id = this._WorkItemId;
-            var oPromise = oApi.invokeActions("/approve", [], { s_no: s_no, reqid: reqid, asnum: asnum, WiId: wi_id, Step: step, IsActiveEntity: IsActiveEntity });
+            let step = this._SequenceExt;
+            let wi_id = this._WorkItemIdExt;
+            let Status = ApporveStatus;
+
+            if (Status === null || Status === undefined) {
+                Status = false;
+            }
+
+            var oPromise = oApi.invokeActions("/approve", [], { s_no: s_no, reqid: reqid, asnum: asnum, WiId: wi_id, Step: step, IsActiveEntity: IsActiveEntity, IsAllApprove: Status });
             oPromise
                 .then(function (aResponse) {
                     debugger;
@@ -586,19 +614,105 @@ sap.ui.define([
                 });
 
         },
+
+        //*************** Check Double Request In MY Task For the Approving  *****************/
+
+        onCheckMyTask: function (oEvent,bSubmit) {
+            const oView = this.getView();
+            const oContext = oView.getBindingContext().getProperty();
+            const sReqId = oContext.reqid;
+            const { s_no, asnum, IsActiveEntity } = oContext;
+            let oApi = this.extensionAPI;
+            let step = this._SequenceExt;
+            let wi_id = this._WorkItemIdExt;
+
+            const oFilter = new sap.ui.model.Filter("Technical_WorkFlow_Object", sap.ui.model.FilterOperator.EQ, sReqId);
+            oView.setBusy(true);
+            const fnValidateAndApprove = (bIsAllApprove) => {
+                const oPayload = {
+                    s_no,
+                    reqid: sReqId,
+                    asnum,
+                    WiId: wi_id,
+                    Step: step,
+                    IsActiveEntity,
+                    IsAllApprove: bIsAllApprove
+                };
+
+                oApi.invokeActions("/check_step_based_mandatory", [], oPayload)
+                    .then((aResponse) => {
+                        oView.setBusy(false);
+                        try {
+                            const sHeader = aResponse[0]?.response?.response?.headers["sap-message"];
+                            const oSapMessage = sHeader ? JSON.parse(sHeader) : {};
+
+                            if (oSapMessage.severity === "success") {
+                                this.onApprove(oEvent, bIsAllApprove);
+                            } else {
+                                sap.m.MessageBox.error(oSapMessage.message || "Mandatory fields missing.");
+                            }
+                        } catch (e) {
+                            sap.m.MessageToast.show("Error parsing validation response.");
+                        }
+                    })
+                    .catch((oError) => {
+                        oView.setBusy(false);
+                        sap.m.MessageToast.show("Validation service failed.");
+                    });
+            };
+
+            // --- MAIN LOGIC FLOW ---
+            if (bSubmit === true) {
+                const oModel = this.getOwnerComponent().getModel("ZP_QU_DG_MYTASK_BND");
+                // Step 1: Check for duplicates
+                oModel.read("/ZP_QU_DG_MYTASK", {
+                    filters: [oFilter],
+                    success: (oData) => {
+                        const aItems = oData.results || [];
+
+                        if (aItems.length > 1) {
+                            // Multiple steps: Ask user, then Validate
+                            const sSteps = aItems.map(item => `• ${item.sequence}`).join("\n");
+                            oView.setBusy(false);
+
+                            sap.m.MessageBox.warning(`Multiple approvals found for request: ${sReqId}\n\nSteps:\n${sSteps}\n\nDo you want to proceed all at once?`, {
+                                title: "Multiple Approvals Detected",
+                                actions: [sap.m.MessageBox.Action.YES, sap.m.MessageBox.Action.NO],
+                                onClose: (oAction) => {
+                                    oView.setBusy(true);
+                                    let ApporveStatus
+                                    if (oAction === sap.m.MessageBox.Action.YES) {
+                                        ApporveStatus = true;
+                                        fnValidateAndApprove(ApporveStatus)
+                                    } else {
+                                        ApporveStatus = false;
+                                        fnValidateAndApprove(ApporveStatus)
+                                    }
+                                }
+                            });
+                        } else {
+                            // No duplicates: Bypass check and Approve directly as False
+                            oView.setBusy(false);
+                            this.onApprove(oEvent, false);
+                        }
+                    },
+                    error: (oError) => {
+                        oView.setBusy(false);
+                        sap.m.MessageToast.show("Failed to check for duplicate tasks.");
+                    }
+                });
+            } else {
+                // bSubmit is false: Immediately validate with IsAllApprove = false
+                fnValidateAndApprove(false);
+            }
+        },
+
         // ****************_______________SUBMIT________________***************
         onSubmit: function (oEvent) {
             if (this.getView().getModel('ui').getProperty('/editable') === true) {
                 sap.m.MessageToast.show("Save the data before submitting");
                 return
             }
-            let oApi = this.extensionAPI;
-            let asnum = this.getView().getBindingContext().getProperty().asnum;
-            let reqid = this.getView().getBindingContext().getProperty().reqid;
-            let s_no = this.getView().getBindingContext().getProperty().s_no;
-            let IsActiveEntity = this.getView().getBindingContext().getProperty().IsActiveEntity;
-            let step = this._Sequence;
-            let wi_id = this._WorkItemId;
             let that = this;
             sap.m.MessageBox.show("Submit Request?", {
                 title: 'Are you sure want to Submit',
@@ -606,28 +720,87 @@ sap.ui.define([
                 emphasizedAction: sap.m.MessageBox.Action.OK,
                 onClose: function (oAction) {
                     if (oAction === sap.m.MessageBox.Action.OK) {
-                        var oPromise = oApi.invokeActions("/check_step_based_mandatory", [], { s_no: s_no, reqid: reqid, asnum: asnum, WiId: wi_id, Step: step, IsActiveEntity: IsActiveEntity });
-                        oPromise
-                            .then(function (aResponse) {
-                                debugger;
-                                let sSeverity = JSON.parse(aResponse[0].response.response.headers["sap-message"]).severity;
-                                if (sSeverity === "success") {
-                                    that.onApprove()
-                                } else {
-                                    sap.m.MessageToast.show("Please Fill all the Mandatory Fileds");
-                                }
-                            })
-                            .catch(function (oError) {
-                                sap.m.MessageToast.show(oError);
-                            });
+                        let Submit = true;
+                        that.onCheckMyTask(oEvent,Submit);
                     }
                 }
             });
         },
 
         ///****************_______________EDIT_____________________**************
-        onEdit: function (oEvent) {
+        onEdit: async function () {
+            debugger;
+            let oApi = this.extensionAPI;
+            let oContext = this.getView().getBindingContext();
+            let oModel = this.getOwnerComponent().getModel()
+            let { reqid, asnum, s_no, IsActiveEntity } = oContext.getObject();
+            let step_name = this._SequenceExt;
+            let stepname = String(step_name || '').replace(/-/g, '');
+            let wi_id = this._WorkItemId;
 
+            try {
+                // --- CALL 1: Check Lock Status of Draft  ---
+                let statusCheck = await oApi.invokeActions("/custom_edit_status", [], {
+                    s_no: s_no, reqid: reqid, asnum: asnum, IsActiveEntity: IsActiveEntity, WiId: wi_id, Step: stepname
+                });
+
+                let lockData = statusCheck[0].response.data.custom_edit_status;
+                if (lockData.Username === '') {
+                    if (lockData.CreateNew == true) {
+                        // --- CALL 2: Trigger Edit and Extract URI ---
+                        let editResponse = await oApi.invokeActions("/ZP_QU_DG_SMROOTEdit", [], {
+                            PreserveChanges: true,
+                            s_no: s_no,
+                            reqid: reqid,
+                            asnum: asnum,
+                            IsActiveEntity: IsActiveEntity,
+                            PreserveChanges: true
+                        });
+                        let sUriFromSecondCall = editResponse[0].response.data;
+                        // --- CALL 3: Final Custom Action using data from Call 2 ---
+                        if (sUriFromSecondCall) {
+                            let navigateResponse = await oApi.invokeActions("/custom_edit", [], {
+                                s_no: sUriFromSecondCall.s_no,
+                                reqid: sUriFromSecondCall.reqid,
+                                asnum: sUriFromSecondCall.asnum,
+                                IsActiveEntity: sUriFromSecondCall.IsActiveEntity,
+                                WiId: wi_id,
+                                Step: stepname,
+
+                            });
+                            let response = navigateResponse[0].response.data.custom_edit;
+                            let sComponent = 'aidgservicemaster'
+                            let oParams = {
+                                REQID: response.Reqid,
+                                SNO: response.SNo,
+                                MATNR: response.Asnum,
+                                ISACTIVEENTITY: response.Isactiveentity,
+                                WIID: wi_id,
+                                SEQUENCE: step_name
+                            }
+
+                            sap.ui.getCore().navigateExternal(sComponent, '', { params: oParams });
+                        }
+                    } else {
+                        let sComponent = 'aidgservicemaster'
+                        let oParams = {
+                            REQID: lockData.Reqid,
+                            SNO: lockData.SNo,
+                            MATNR: lockData.Asnum,
+                            ISACTIVEENTITY: lockData.Isactiveentity,
+                            WIID: wi_id,
+                            SEQUENCE: step_name
+                        }
+                        sap.ui.getCore().navigateExternal(sComponent, '', { params: oParams });
+                    }
+
+                } else {
+                    return sap.m.MessageBox.error("Record is being Edited by " + lockData.Username);
+                }
+            } catch (oError) {
+                console.log("Action Chain Failed: ", oError);
+                sap.m.MessageBox.error("An error occurred during the update process...");
+            }
         },
 
         // ****************_______________REJECT________________***************
@@ -668,86 +841,111 @@ sap.ui.define([
                 this._rejectDialog = null;
             }
         },
+        onStepSelectionChange: function (oEvent) {
+            var oMultiCombo = oEvent.getSource();
+            var aSelectedKeys = oMultiCombo.getSelectedKeys();
+            var aAllItems = oMultiCombo.getItems();
+            if (aSelectedKeys.length === 0) {
+                aAllItems.forEach(item => item.setEnabled(true));
+                return;
+            }
+            var sFirstKey = aSelectedKeys[0];
+            var sAllowedGroup = sFirstKey.split("-")[0];
+            aAllItems.forEach(function (oItem) {
+                var sItemKey = oItem.getKey();
+                var sItemGroup = sItemKey.split("-")[0];
+                if (sItemGroup === sAllowedGroup) {
+                    oItem.setEnabled(true);
+                } else {
+                    oItem.setEnabled(false);
+                }
+            });
+        },
 
         onConfirmReject: async function () {
             debugger;
             let that = this;
-            let oCommentInput = this.getView().byId('idRejectComment')
+            let oCommentInput = this.getView().byId('idRejectComment');
             let oComboBox = this.getView().byId("idrejectip");
-            if (oCommentInput.getValue() && oComboBox.getSelectedKey()) {
-                try {
-                    this._rejectDialog.setBusy(true);
-                    let sRejectionComment = oCommentInput.getValue();
-                    let rejectInputValue = oComboBox.getSelectedKey();
-
-                    let oApi = this.extensionAPI;
-                    let s_no = this.getView().getBindingContext().getProperty().s_no;
-                    let reqid = this.getView().getBindingContext().getProperty().reqid;
-                    let asnum = this.getView().getBindingContext().getProperty().asnum;
-                    let IsActiveEntity = this.getView().getBindingContext().getProperty().IsActiveEntity;
-                    let wi_id = this._WorkItemId
-                    let topLevelWiId = this._TopLevelWiid
-
-                    // Invoke rejection action
-                    let aResponse = await oApi.invokeActions("/reject", [], {
-                        s_no: s_no,
-                        reqid: reqid,
-                        asnum: asnum,
-                        IsActiveEntity: IsActiveEntity,
-                        WiId: wi_id,
-                        Step: rejectInputValue
-                    });
-
-                    if (this._rejectDialog) {
-                        this._rejectDialog.close();
-                        this._rejectDialog.destroy();
-                        this._rejectDialog = null;
-                    }
-
-                    // Post request for comments
-                    let sLoggedInUser = this.getView().getBindingContext().getObject().user_name
-                    let oCommentModel = this.getOwnerComponent().getModel('ZQU_DG_ATTACHMENT_COMMENT_SRV');
-                    let oPayload = {
-                        InstanceId: topLevelWiId,
-                        Id: "",
-                        Filename: "USER COMMENTS",
-                        Text: sRejectionComment,
-                        CreatedAt: new Date(),
-                        CreatedBy: sLoggedInUser,
-                    };
-
-                    await new Promise((resolve, reject) => {
-                        oCommentModel.create("/TaskSet('" + topLevelWiId + "')/TaskToComments", oPayload, {
-                            success: resolve,
-                            error: reject
-                        });
-                    });
-
-                    //SHOW SUCCESS MESSAGE
-                    let rejectMessage = JSON.parse(aResponse[0].response.response.headers["sap-message"]).message;
-                    sap.m.MessageBox.success(rejectMessage, {
-                        onClose: function () {
-                            that._bIsNavigatingFromExternal ? sap.ui.getCore().navigateExternal('mytasknew.mytasknew', '', {}) : window.history.go(-1)
-                        }
-                    });
-
-                } catch (oError) {
-                    sap.m.MessageToast.show("Rejection failed, please try again.");
-                    console.log("Error:", oError);
-                } finally {
-                    //this._rejectDialog.setBusy(false);
-                }
-
+            let bValid = true;
+            if (!oCommentInput.getValue()) {
+                oCommentInput.setValueState("Error");
+                oCommentInput.setValueStateText("Please add comment to proceed...!!!");
+                bValid = false;
             } else {
-                if (!oCommentInput.getValue()) {
-                    oCommentInput.setValueState("Error")
-                    oCommentInput.setValueStateText("Please add comment to proceed...!!!")
-                }
-
-
+                oCommentInput.setValueState("None");
             }
 
+            let aSelectedSteps = oComboBox.getSelectedKeys();
+            if (aSelectedSteps.length === 0) {
+                oComboBox.setValueState("Error");
+                oComboBox.setValueStateText("Please select at least one step.");
+                bValid = false;
+            } else {
+                oComboBox.setValueState("None");
+            }
 
+            if (!bValid) return;
+
+            try {
+                this._rejectDialog.setBusy(true);
+                let sRejectionComment = oCommentInput.getValue();
+
+                let rejectInputValue = aSelectedSteps.toString();
+
+                let oApi = this.extensionAPI;
+                let oData = this.getView().getBindingContext().getProperty();
+                let wi_id = this._WorkItemIdExt;
+                let topLevelWiId = this._TopLevelWiid;
+
+                let aResponse = await oApi.invokeActions("/reject", [], {
+                    s_no: oData.s_no,
+                    reqid: oData.reqid,
+                    asnum: oData.asnum,
+                    IsActiveEntity: oData.IsActiveEntity,
+                    WiId: wi_id,
+                    Step: rejectInputValue
+                });
+
+                if (this._rejectDialog) {
+                    this._rejectDialog.close();
+                    this._rejectDialog.destroy();
+                    this._rejectDialog = null;
+                }
+
+                let sLoggedInUser = this.getView().getBindingContext().getObject()?.user_name;
+                let oCommentModel = this.getOwnerComponent().getModel('ZQU_DG_ATTACHMENT_COMMENT_SRV');
+                let oPayload = {
+                    InstanceId: topLevelWiId,
+                    Id: "",
+                    Filename: "USER COMMENTS",
+                    Text: sRejectionComment,
+                    CreatedAt: new Date(),
+                    CreatedBy: sLoggedInUser,
+                };
+
+                await new Promise((resolve, reject) => {
+                    oCommentModel.create("/TaskSet('" + topLevelWiId + "')/TaskToComments", oPayload, {
+                        success: resolve,
+                        error: reject
+                    });
+                });
+
+                let rejectMessage = JSON.parse(aResponse[0].response.response.headers["sap-message"]).message;
+                sap.m.MessageBox.success(rejectMessage, {
+                    onClose: function () {
+                        that._bIsNavigatingFromExternal ? sap.ui.getCore().navigateExternal('mytasknew.mytasknew', '', {}) : window.history.go(-1);
+                    }
+                });
+
+            } catch (oError) {
+                sap.m.MessageToast.show("Rejection failed, please try again.");
+                console.log("Error:", oError);
+            } finally {
+                if (this._rejectDialog) {
+                    this._rejectDialog.setBusy(false);
+                }
+            }
         },
         onDuplicateCheck: function (oEvent) {
             this.getView().setBusy(true);
@@ -988,46 +1186,50 @@ sap.ui.define([
             }.bind(this));
         },
 
+        getTheStatusOfRequest: function () {
+            let oModel = this.getView().getModel();
+            let uri = window.location.href;
+            let match = uri.match(/\(([^)]+)\)/);
 
-        // _initServiceMasterSideEffects: function () {
-        //     const oView = this.getView();
-        //     const oModel = oView.getModel();
-        //     // 1. Manually set our hardcoded fields into a local JSON Model
-        //     const aFields = [
-        //         { "fieldName": "astyp", "entitySet": "ZP_QU_DG_SMROOT" },
-        //         { "fieldName": "matkl", "entitySet": "ZP_QU_DG_SMROOT" },
-        //         { "fieldName": "meins", "entitySet": "ZP_QU_DG_SMROOT" }
-        //     ];
+            if (match && match[1]) {
+                let sKeyString = match[1];
+                let oParams = {};
 
-        //     oView.setModel(new JSONModel(aFields), "localSideEffectConfig");
+                sKeyString.split(",").forEach(function (item) {
+                    let aPair = item.split("=");
+                    let sKey = aPair[0];
+                    let sValue = aPair[1].replace(/'/g, "");
 
-        //     // 2. Prevent duplicate listeners
-        //     oModel.detachPropertyChange(this._handleSMFieldChange, this);
+                    if (sValue === "true") sValue = true;
+                    else if (sValue === "false") sValue = false;
+                    else if (!isNaN(sValue) && sValue !== "") sValue = parseInt(sValue);
 
-        //     // 3. Attach the global listener
-        //     oModel.attachPropertyChange(this._handleSMFieldChange, this);
+                    oParams[sKey] = sValue;
+                });
 
-        //     console.log("Service Master: Hardcoded Side Effects Initialized");
-        // },
+                let sPath = oModel.createKey("/ZP_QU_DG_SMROOT", oParams);
 
-        // _handleSMFieldChange: function (oEvent) {
-        //     const oExtensionAPI = this.extensionAPI;
-        //     const sPath = oEvent.getParameter("path");
+                oModel.read(sPath, {
+                    success: function (oData) {
+                        console.log("Entity exists.");
+                    },
+                    error: function (oError) {
+                        if (oError.statusCode === "404" || oError.statusCode === 404) {
+                            oParams.s_no = 1;
+                            oParams.IsActiveEntity = true;
 
-        //     // Normalize path (metadata fields are direct properties)
-        //     const sChangedField = sPath.includes("/") ? sPath.split("/").pop() : sPath;
+                            let sNewKeys = `s_no=${oParams.s_no},` +
+                                `reqid='${oParams.reqid}',` +
+                                `asnum='${oParams.asnum || ""}',` +
+                                `IsActiveEntity=${oParams.IsActiveEntity}`;
 
-        //     const oLocalConfig = this.getView().getModel("localSideEffectConfig");
-        //     const aConfig = oLocalConfig.getData();
-
-        //     // 4. Check if the changed field is in our test list
-        //     const oMatch = aConfig.find(item => item.fieldName === sChangedField);
-
-        //     if (oMatch) {
-        //         MessageToast.show("Side Effect: Refreshing " + oMatch.entitySet + " due to " + sChangedField);
-        //         oExtensionAPI.refresh(oMatch.entitySet);
-        //     }
-        // }
+                            let newUrl = uri.replace(match[1], sNewKeys);
+                            window.location.replace(newUrl);
+                        }
+                    }
+                });
+            }
+        },
 
     }
 });
